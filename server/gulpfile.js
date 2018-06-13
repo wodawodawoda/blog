@@ -19,6 +19,7 @@ gulp.task('server', function() {
 
 gulp.task('nodemon', function () {
 	nodemon({
-		script: 'dist/server.js'
+		script: 'dist/server.js',
+		ext: 'js html'
 	})
 })

@@ -18,4 +18,9 @@ var router = new _express.Router();
 router.route('/examples').get(ExampleController.getExamples);
 
 router.route('/examples').post(ExampleController.addExample);
+
+router.route('/examples/:id').put(ExampleController.updateExample);
+
+router.route('/examples/:id').delete(ExampleController.deleteExample);
+
 exports.default = router;
