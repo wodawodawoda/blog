@@ -1,13 +1,13 @@
 import Backbone from 'backbone'
 
 // Models
-import { Example } from './models/example'
+import Example from './models/example'
 
 // Views
 import ExamplesView from './views/examples'
 
 // Collections
-import examples from './collections/examples'
+import exampleInstance from './collections/examples'
 
 
 import Router from './router'
@@ -23,15 +23,16 @@ $(document).ready(function () {
 		const example = new Example({
 			name: $('.name-input').val(),
 		})
-		examples.add(example)
 
 		example.save(null, {
 			success: res => {
-				console.log(`Successfully saved blog with _id: ${res.toJSON()._id}!`)
+				console.log(res.toJSON())
+				exampleInstance.add(res.toJSON())
 			},
 			error: () => {
 				console.log('Failed to save blog!')
 			}
 		})
+
 	})
 })

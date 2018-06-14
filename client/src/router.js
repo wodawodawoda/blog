@@ -18,6 +18,7 @@ const Router = Backbone.Router.extend({
 	},
 	examples: function () {
 		console.log('elo')
+		$('body').app
 	},
 
 	example: function (id) {

@@ -13995,6 +13995,8 @@ var _backbone2 = _interopRequireDefault(_backbone);
 
 var _example = require('./models/example');
 
+var _example2 = _interopRequireDefault(_example);
+
 var _examples = require('./views/examples');
 
 var _examples2 = _interopRequireDefault(_examples);
@@ -14025,14 +14027,14 @@ $(document).ready(function () {
 	_backbone2.default.history.start();
 	$('.add-example').on('click', function (e) {
 		e.preventDefault();
-		var example = new _example.Example({
+		var example = new _example2.default({
 			name: $('.name-input').val()
 		});
-		_examples4.default.add(example);
 
 		example.save(null, {
 			success: function success(res) {
-				console.log('Successfully saved blog with _id: ' + res.toJSON()._id + '!');
+				console.log(res.toJSON());
+				_examples4.default.add(res.toJSON());
 			},
 			error: function error() {
 				console.log('Failed to save blog!');
@@ -14057,7 +14059,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Examples = _backbone2.default.Collection.extend({
 	url: 'http://localhost:3000/api/examples'
 }); // Backbone Collections
-exports.default = Examples;
+
+
+var exampleInstance = new Examples();
+
+exports.default = exampleInstance;
 
 },{"backbone":1}],6:[function(require,module,exports){
 'use strict';
@@ -14078,6 +14084,7 @@ _backbone2.default.Model.prototype.idAttribute = '_id'; // Backbone Models
 var Example = _backbone2.default.Model.extend({
 	urlRoot: 'api/examples',
 	default: {
+		idAttribute: null,
 		name: ''
 	}
 });
@@ -14121,6 +14128,7 @@ var Router = _backbone2.default.Router.extend({
 	},
 	examples: function examples() {
 		console.log('elo');
+		$('body').app;
 	},
 
 	example: function example(id) {
@@ -14237,7 +14245,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // Collections
 var ExamplesView = exports.ExamplesView = _backbone2.default.View.extend({
-	model: new _examples2.default(),
+	model: _examples2.default,
 	el: $('.examples-list'),
 	initialize: function initialize() {
 		this.model.on('add', this.render, this);
