@@ -1,3 +1,5 @@
+import Backbone from 'backbone'
+
 // Models
 import { Example } from './models/example'
 
@@ -7,12 +9,16 @@ import ExamplesView from './views/examples'
 // Collections
 import examples from './collections/examples'
 
-const examplesView = new ExamplesView()
+
+import Router from './router'
+const router = new Router();
+
+// const examplesView = new ExamplesView()
 
 // DOM events handlers
 $(document).ready(function () {
+	Backbone.history.start();
 	$('.add-example').on('click', function (e) {
-		console.log('elo')
 		e.preventDefault()
 		const example = new Example({
 			name: $('.name-input').val(),

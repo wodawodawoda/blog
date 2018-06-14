@@ -13989,6 +13989,10 @@ return jQuery;
 },{}],4:[function(require,module,exports){
 'use strict';
 
+var _backbone = require('backbone');
+
+var _backbone2 = _interopRequireDefault(_backbone);
+
 var _example = require('./models/example');
 
 var _examples = require('./views/examples');
@@ -13999,19 +14003,27 @@ var _examples3 = require('./collections/examples');
 
 var _examples4 = _interopRequireDefault(_examples3);
 
+var _router = require('./router');
+
+var _router2 = _interopRequireDefault(_router);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Views
-var examplesView = new _examples2.default();
+// Collections
+
+
+// Models
+var router = new _router2.default();
+
+// const examplesView = new ExamplesView()
 
 // DOM events handlers
 
 
-// Collections
-// Models
+// Views
 $(document).ready(function () {
+	_backbone2.default.history.start();
 	$('.add-example').on('click', function (e) {
-		console.log('elo');
 		e.preventDefault();
 		var example = new _example.Example({
 			name: $('.name-input').val()
@@ -14029,7 +14041,7 @@ $(document).ready(function () {
 	});
 });
 
-},{"./collections/examples":5,"./models/example":6,"./views/examples":8}],5:[function(require,module,exports){
+},{"./collections/examples":5,"./models/example":6,"./router":7,"./views/examples":9,"backbone":1}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14045,11 +14057,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Examples = _backbone2.default.Collection.extend({
 	url: 'http://localhost:3000/api/examples'
 }); // Backbone Collections
-
-
-var examples = new Examples();
-
-exports.default = examples;
+exports.default = Examples;
 
 },{"backbone":1}],6:[function(require,module,exports){
 'use strict';
@@ -14057,7 +14065,6 @@ exports.default = examples;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.Example = undefined;
 
 var _backbone = require('backbone');
 
@@ -14066,13 +14073,74 @@ var _backbone2 = _interopRequireDefault(_backbone);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _backbone2.default.Model.prototype.idAttribute = '_id'; // Backbone Models
-var Example = exports.Example = _backbone2.default.Model.extend({
+
+
+var Example = _backbone2.default.Model.extend({
+	urlRoot: 'api/examples',
 	default: {
 		name: ''
 	}
 });
+exports.default = Example;
 
 },{"backbone":1}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _backbone = require('backbone');
+
+var _backbone2 = _interopRequireDefault(_backbone);
+
+var _examples = require('./views/examples');
+
+var _examples2 = _interopRequireDefault(_examples);
+
+var _single = require('./views/single');
+
+var _single2 = _interopRequireDefault(_single);
+
+var _example = require('./models/example');
+
+var _example2 = _interopRequireDefault(_example);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Router = _backbone2.default.Router.extend({
+	routes: {
+		'': 'index',
+		'examples': 'examples',
+		'examples/:id': 'example'
+	},
+
+	index: function index() {
+		var link = document.createElement('a');
+		link.href = '#examples';
+		link.innerText = 'Dawaj dalej';
+		$(document.body).append(link);
+	},
+
+	examples: function examples() {
+		this.view = new _examples2.default();
+		console.log('elo');
+	},
+
+	example: function example(id) {
+		var newModel = new _example2.default({ _id: id });
+		newModel.fetch().then(function (res) {
+			var newSingle = new _single2.default({
+				model: newModel,
+				_id: id
+			}).render();
+		});
+	}
+});
+
+exports.default = Router;
+
+},{"./models/example":6,"./views/examples":9,"./views/single":10,"backbone":1}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14089,13 +14157,14 @@ var _underscore2 = _interopRequireDefault(_underscore);
 
 var _example = require('../models/example');
 
+var _example2 = _interopRequireDefault(_example);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var ExampleView = _backbone2.default.View.extend({
-	model: new _example.Example(),
-	tagName: 'tr',
+	model: new _example2.default(),
+	tagName: 'div',
 	initialize: function initialize() {
-		console.log({ self: this });
 		this.template = _underscore2.default.template($('.example-list-template').html());
 	},
 	events: {
@@ -14115,14 +14184,12 @@ var ExampleView = _backbone2.default.View.extend({
 		this.model.set({
 			name: $('.name-update').val()
 		});
-		console.log(this.model);
 		this.model.save(null, {
 			success: function success(res) {
 				console.log('Successfully UPDATED example with _id: ' + res.toJSON()._id);
 			},
 			error: function error(res) {
 				console.log('Failed to update example!');
-				console.log(res);
 			}
 		});
 	},
@@ -14147,7 +14214,7 @@ var ExampleView = _backbone2.default.View.extend({
 }); // Views Backbone
 exports.default = ExampleView;
 
-},{"../models/example":6,"backbone":1,"underscore":3}],8:[function(require,module,exports){
+},{"../models/example":6,"backbone":1,"underscore":3}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14171,7 +14238,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // Collections
 var ExamplesView = exports.ExamplesView = _backbone2.default.View.extend({
-	model: _examples2.default,
+	model: new _examples2.default(),
 	el: $('.examples-list'),
 	initialize: function initialize() {
 		this.model.on('add', this.render, this);
@@ -14201,6 +14268,42 @@ var ExamplesView = exports.ExamplesView = _backbone2.default.View.extend({
 }); // Views Backbone
 exports.default = ExamplesView;
 
-},{"../collections/examples":5,"./example":7,"backbone":1}]},{},[4])
+},{"../collections/examples":5,"./example":8,"backbone":1}],10:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.SingleView = undefined;
+
+var _backbone = require('backbone');
+
+var _backbone2 = _interopRequireDefault(_backbone);
+
+var _example = require('../models/example');
+
+var _example2 = _interopRequireDefault(_example);
+
+var _underscore = require('underscore');
+
+var _underscore2 = _interopRequireDefault(_underscore);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Collections
+var SingleView = exports.SingleView = _backbone2.default.View.extend({
+	model: new _example2.default(),
+	el: $('.examples-list'),
+	initialize: function initialize() {
+		this.template = _underscore2.default.template($('.example-list-template').html());
+	},
+	render: function render() {
+		this.$el.html(this.template(this.model.toJSON()));
+		return this;
+	}
+}); // Views Backbone
+exports.default = SingleView;
+
+},{"../models/example":6,"backbone":1,"underscore":3}]},{},[4])
 
 //# sourceMappingURL=bundle.js.map

@@ -19,6 +19,5 @@ import './mongoConfig.js'
 
 // Serve static files
 app.use(express.static(`${__dirname}/../public`))
-console.log(`${__dirname}/public`)
 
 server.listen(port, () => {console.log(`server listens on port: ${port}`)});

@@ -12,9 +12,7 @@ export function getExamples(req, res) {
 
 export function addExample(req, res) {
 	console.log(`Received POST`)
-	console.log(req)
 	const newExample = new Example(req.body);
-	console.log(req.body)
 	newExample.save((err, docs) => {
 		if(err) res.status(500).send(err);
 		res.send(docs)
@@ -36,4 +34,11 @@ export function deleteExample(req, res) {
 		{_id: req.params.id},
 		err => res.send({_id: req.params.id})
 	)
+}
+
+export function getExample(req, res) {
+	console.log(`Received GET for single example`)
+	Example.findById(req.params.id, (err, doc) => {
+		res.send(doc)
+	})
 }

@@ -2,11 +2,11 @@
 import Backbone from 'backbone'
 
 // Collections
-import examples from '../collections/examples'
+import Examples from '../collections/examples'
 import ExampleView from './example'
 
 export const ExamplesView = Backbone.View.extend({
-	model: examples,
+	model: new Examples(),
 	el: $('.examples-list'),
 	initialize: function () {
 		this.model.on('add', this.render, this);

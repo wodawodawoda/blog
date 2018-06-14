@@ -11,5 +11,6 @@ router.route('/examples/:id').put(ExampleController.updateExample);
 
 router.route('/examples/:id').delete(ExampleController.deleteExample);
 
+router.route('/examples/:id').get(ExampleController.getExample);
 
 export default router;

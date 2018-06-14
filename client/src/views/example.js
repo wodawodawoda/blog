@@ -1,13 +1,12 @@
 // Views Backbone
 import Backbone from 'backbone'
 import _ from 'underscore'
-import { Example } from '../models/example'
+import Example from '../models/example'
 
 const ExampleView = Backbone.View.extend({
 	model: new Example(),
-	tagName: 'tr',
+	tagName: 'div',
 	initialize: function () {
-		console.log({self: this})
 		this.template = _.template($('.example-list-template').html())
 	},
 	events: {
@@ -27,14 +26,12 @@ const ExampleView = Backbone.View.extend({
 		this.model.set({
 			name: $('.name-update').val(),
 		})
-		console.log(this.model)
 		this.model.save(null, {
 			success: res => {
 				console.log(`Successfully UPDATED example with _id: ${res.toJSON()._id}`)
 			},
 			error: res => {
 				console.log('Failed to update example!')
-				console.log(res)
 			}
 		})
 	},

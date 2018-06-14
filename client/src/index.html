@@ -8,32 +8,20 @@
 <body>
 	<h2>example-backbone</h2>
     <form id="example-form"></form>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Author</th>
-            <th>Title</th>
-            <th>Url</th>
-            <th>Action</th>
-        </tr>
-        <tr>
-            <td><input type="text" class="form-control name-input" form="example-form"></td>
-            <td><button type="submit" class="btn btn-primary add-example" form="example-form">Add</button></td>
-        </tr>
-        </thead>
-        <tbody class="examples-list">
-
-        </tbody>
-    </table>
+    <input type="text" class="form-control name-input" form="example-form">
+    <button type="submit" class="btn btn-primary add-example" form="example-form">Add</button>
+    <section class="examples-list"></section>
 
     <script type="text/template" class="example-list-template">
-        <td><span class="name"><%= name %></span></td>
-        <td>
+        <span class="name"><%= name %></span>
+        <div>
             <button class="btn btn-warning edit-example">Edit</button>
             <button class="btn btn-danger delete-example">Delete</button>
             <button class="btn btn-success update-example d-none">Update</button>
             <button class="btn btn-danger cancel-example d-none">Cancel</button>
-        </td>
+            <a href="#/examples/<%-_id%>" class="btn btn-primary edit-example">Preview</a>
+            <a href="#/examples" class="btn btn-primary edit-example">Return</a>
+        </div>
     </script>
 
 
