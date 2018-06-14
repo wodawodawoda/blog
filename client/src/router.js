@@ -13,14 +13,10 @@ const Router = Backbone.Router.extend({
 	},
 
 	index: function () {
-		const link = document.createElement('a')
-		link.href = '#examples'
-		link.innerText = 'Dawaj dalej'
-		$(document.body).append(link);
-	},
-
-	examples: function () {
 		this.view = new ExamplesView()
+		this.view.render()
+	},
+	examples: function () {
 		console.log('elo')
 	},
 
@@ -32,6 +28,9 @@ const Router = Backbone.Router.extend({
 					model: newModel,
 					_id: id
 				}).render()
+				// Hide preview button
+				$('.preview-example').addClass('d-none')
+				$('.return-example').removeClass('d-none')
 			})
 
 	}

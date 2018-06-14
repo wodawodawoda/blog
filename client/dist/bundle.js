@@ -14116,14 +14116,10 @@ var Router = _backbone2.default.Router.extend({
 	},
 
 	index: function index() {
-		var link = document.createElement('a');
-		link.href = '#examples';
-		link.innerText = 'Dawaj dalej';
-		$(document.body).append(link);
-	},
-
-	examples: function examples() {
 		this.view = new _examples2.default();
+		this.view.render();
+	},
+	examples: function examples() {
 		console.log('elo');
 	},
 
@@ -14134,6 +14130,9 @@ var Router = _backbone2.default.Router.extend({
 				model: newModel,
 				_id: id
 			}).render();
+			// Hide preview button
+			$('.preview-example').addClass('d-none');
+			$('.return-example').removeClass('d-none');
 		});
 	}
 });
