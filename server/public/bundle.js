@@ -14017,12 +14017,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // Models
 var router = new _router2.default();
 
+// Views
+
+
+router.on('route', function () {
+	// console.log('nosiema')
+});
 // const examplesView = new ExamplesView()
 
 // DOM events handlers
-
-
-// Views
 $(document).ready(function () {
 	_backbone2.default.history.start();
 	$('.add-example').on('click', function (e) {
@@ -14043,7 +14046,7 @@ $(document).ready(function () {
 	});
 });
 
-},{"./collections/examples":5,"./models/example":6,"./router":7,"./views/examples":9,"backbone":1}],5:[function(require,module,exports){
+},{"./collections/examples":5,"./models/example":6,"./router":7,"./views/examples":12,"backbone":1}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14057,6 +14060,7 @@ var _backbone2 = _interopRequireDefault(_backbone);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Examples = _backbone2.default.Collection.extend({
+	// comparator: 'name',
 	url: 'http://localhost:3000/api/examples'
 }); // Backbone Collections
 
@@ -14084,7 +14088,6 @@ _backbone2.default.Model.prototype.idAttribute = '_id'; // Backbone Models
 var Example = _backbone2.default.Model.extend({
 	urlRoot: 'api/examples',
 	default: {
-		idAttribute: null,
 		name: ''
 	}
 });
@@ -14109,45 +14112,195 @@ var _single = require('./views/single');
 
 var _single2 = _interopRequireDefault(_single);
 
+var _underscore = require('underscore');
+
+var _underscore2 = _interopRequireDefault(_underscore);
+
 var _example = require('./models/example');
 
 var _example2 = _interopRequireDefault(_example);
 
+var _static = require('./views/static');
+
+var _static2 = _interopRequireDefault(_static);
+
+var _main = require('./views/main');
+
+var _main2 = _interopRequireDefault(_main);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Router = _backbone2.default.Router.extend({
+// Backbone.Router.prototype.before = function () {};
+// Backbone.Router.prototype.after = function () {};
+
+// Backbone.Router.prototype.route = function (route, name, callback) {
+// 	if (!_.isRegExp(route)) route = this._routeToRegExp(route);
+// 	if (_.isFunction(name)) {
+// 		callback = name;
+// 		name = '';
+// 	}
+// 	if (!callback) callback = this[name];
+//
+// 	var router = this;
+//
+// 	Backbone.history.route(route, function(fragment) {
+// 		var args = router._extractParameters(route, fragment);
+//
+// 		router.before.apply(router, arguments);
+// 		callback && callback.apply(router, args);
+// 		router.after.apply(router, arguments);
+//
+// 		router.trigger.apply(router, ['route:' + name].concat(args));
+// 		router.trigger('route', name, args);
+// 		Backbone.history.trigger('route', router, name, args);
+// 	});
+// 	return this;
+// };
+
+
+var RouterTwo = _backbone2.default.Router.extend({
 	routes: {
 		'': 'index',
+		'header': 'header',
 		'examples': 'examples',
 		'examples/:id': 'example'
+		// '*home': 'index',
+	},
+
+	// Track all rendered views at the time
+	activeViews: {},
+
+	initialize: function initialize() {
+		this.on('route', function (routeEvent) {
+			console.log('zmiana route');
+			console.log(routeEvent);
+			console.log(_backbone2.default.history.getFragment());
+		});
 	},
 
 	index: function index() {
-		this.view = new _examples2.default();
-		this.view.render();
+		this.goBack(_main2.default);
 	},
+
+	header: function header() {
+		this.goBack(_static2.default, '.examples-list');
+		// this.remove('header')
+	},
+
 	examples: function examples() {
-		console.log('elo');
-		$('body').app;
+		// new ExamplesView().render()
+		this.goBack(_examples2.default, '.examples-list');
 	},
 
 	example: function example(id) {
 		var newModel = new _example2.default({ _id: id });
 		newModel.fetch().then(function (res) {
 			var newSingle = new _single2.default({
-				model: newModel,
-				_id: id
+				model: newModel
 			}).render();
 			// Hide preview button
 			$('.preview-example').addClass('d-none');
 			$('.return-example').removeClass('d-none');
 		});
+	},
+
+	/*
+  * param 'toRender': element to be rendered
+  * param 'el': HTML element in which 'toRender' element will be rendered
+  */
+	goBack: function goBack(toRender, el) {
+		var _this = this;
+
+		// 'toRender' element name
+		var name = toRender.prototype.name;
+		// Check if any unneeded element or dependency is rendered on site
+		Object.keys(this.activeViews).forEach(function (view) {
+			// Search for already rendered toRender element && its dependencies
+			if (view !== name && !toRender.prototype.dependencies.find(function (dep) {
+				return dep.prototype.name === view;
+			})) {
+				// Remove founded element from DOM
+				_this.activeViews[view].remove();
+				// Remove founded element from 'activeElement' object
+				delete _this.activeViews[view];
+			}
+		});
+		// If toRender element is not rendered, run add() to render element
+		if (!this.activeViews[name]) {
+			this.add(toRender, '', el);
+		}
+	},
+
+	add: function add(view, name, el) {
+		var _this2 = this;
+
+		// Check for element name
+		name = name || view.prototype.name;
+		// Instance new view
+		var mod = new view();
+		// Check new view dependencies
+		if (mod.dependencies) {
+			mod.dependencies.forEach(function (dep) {
+				// If dependency is already rendered return
+				if (_this2.activeViews[dep.prototype.name]) return;
+				// Instance new dependency element
+				var newDep = new dep();
+				// Add newly rendered element to activeViews object
+				_this2.activeViews[dep.prototype.name] = newDep;
+				newDep.render();
+			});
+		}
+		// If 'el' parameter is specified push it to view instance
+		if (el) {
+			mod.$el.push(document.querySelector(el));
+			mod.el = document.querySelector(el);
+		}
+		// Add view instance to 'activeViews' object
+		this.activeViews[name] = mod;
+		// Render view
+		mod.render();
+	},
+
+	// Remove view
+	remove: function remove(name) {
+		this.activeViews[name].remove();
+		delete this.activeViews[name];
 	}
+
 });
 
-exports.default = Router;
+exports.default = RouterTwo;
 
-},{"./models/example":6,"./views/examples":9,"./views/single":10,"backbone":1}],8:[function(require,module,exports){
+},{"./models/example":6,"./views/examples":12,"./views/main":13,"./views/single":14,"./views/static":15,"backbone":1,"underscore":3}],8:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+		value: true
+});
+var exampletemplate = "\n<span class=\"name\"><%= name %></span>\n<div>\n\t\t<button class=\"btn btn-warning edit-example\">Edit</button>\n\t\t<button class=\"btn btn-danger delete-example\">Delete</button>\n\t\t<button class=\"btn btn-success update-example d-none\">Update</button>\n\t\t<button class=\"btn btn-danger cancel-example d-none\">Cancel</button>\n\t\t<a href=\"#/examples/<%-_id%>\" class=\"btn btn-primary preview-example\">Preview</a>\n\t\t<a href=\"#/\" class=\"btn btn-primary return-example d-none\">Return</a>\n</div>\n";
+exports.default = exampletemplate;
+
+},{}],9:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+		value: true
+});
+var headertemplate = "\n<div>\n\t\t<h1>NO ELO MORDO. JESTEMTWOIM HEADERERM</h1>\n\t\t<a href=\"#/\">BACKBACKBACK</a>\n</div>\n";
+
+exports.default = headertemplate;
+
+},{}],10:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+var maintemplate = "\n<div>\n\t<h2>example-backbone</h2>\n\t<form id=\"example-form\"></form>\n\t<input type=\"text\" class=\"form-control name-input\" form=\"example-form\">\n\t<button type=\"submit\" class=\"btn btn-primary add-example\" form=\"example-form\">Add</button>\n\t<a href=\"#/examples\">examples</a>\n\n\t<header class=\"header\"></header>\n\n\t<nav class=\"navigation\"></nav>\n\n\t<aside class=\"sidebar\"></aside>\n\n\t<section class=\"examples-list\"></section>\n</div>";
+
+exports.default = maintemplate;
+
+},{}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14166,13 +14319,18 @@ var _example = require('../models/example');
 
 var _example2 = _interopRequireDefault(_example);
 
+var _exampleTemplate = require('../templates/example-template');
+
+var _exampleTemplate2 = _interopRequireDefault(_exampleTemplate);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// Views Backbone
 var ExampleView = _backbone2.default.View.extend({
 	model: new _example2.default(),
 	tagName: 'div',
 	initialize: function initialize() {
-		this.template = _underscore2.default.template($('.example-list-template').html());
+		this.template = _underscore2.default.template(_exampleTemplate2.default);
 	},
 	events: {
 		'click .edit-example': 'edit',
@@ -14218,10 +14376,11 @@ var ExampleView = _backbone2.default.View.extend({
 		this.$el.html(this.template(this.model.toJSON()));
 		return this;
 	}
-}); // Views Backbone
+});
+
 exports.default = ExampleView;
 
-},{"../models/example":6,"backbone":1,"underscore":3}],9:[function(require,module,exports){
+},{"../models/example":6,"../templates/example-template":8,"backbone":1,"underscore":3}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14241,10 +14400,20 @@ var _example = require('./example');
 
 var _example2 = _interopRequireDefault(_example);
 
+var _main = require('./main');
+
+var _main2 = _interopRequireDefault(_main);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Collections
+// Views Backbone
 var ExamplesView = exports.ExamplesView = _backbone2.default.View.extend({
+	remove: function remove() {
+		this.$el.empty().off(); /* off to unbind the events */
+		this.stopListening();
+		return this;
+	},
+	dependencies: [_main2.default],
 	model: _examples2.default,
 	el: $('.examples-list'),
 	initialize: function initialize() {
@@ -14258,8 +14427,9 @@ var ExamplesView = exports.ExamplesView = _backbone2.default.View.extend({
 					return console.log('Successfully GET example with _id: ' + item._id);
 				});
 			},
-			error: function error() {
-				return console.log('Failed to GET examples!');
+			error: function error(col, err, op) {
+				console.log('Failed to GET examples!');
+				console.log({ col: col, err: err, op: op });
 			}
 		});
 	},
@@ -14268,14 +14438,64 @@ var ExamplesView = exports.ExamplesView = _backbone2.default.View.extend({
 
 		this.$el.html('');
 		this.model.toArray().forEach(function (blog) {
+			// console.log(model)
 			_this.$el.append(new _example2.default({ model: blog }).render().$el);
 		});
 		return this;
 	}
-}); // Views Backbone
+});
+
+// Collections
 exports.default = ExamplesView;
 
-},{"../collections/examples":5,"./example":8,"backbone":1}],10:[function(require,module,exports){
+},{"../collections/examples":5,"./example":11,"./main":13,"backbone":1}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.MainView = undefined;
+
+var _backbone = require('backbone');
+
+var _backbone2 = _interopRequireDefault(_backbone);
+
+var _example = require('../models/example');
+
+var _example2 = _interopRequireDefault(_example);
+
+var _underscore = require('underscore');
+
+var _underscore2 = _interopRequireDefault(_underscore);
+
+var _mainTemplate = require('../templates/main-template');
+
+var _mainTemplate2 = _interopRequireDefault(_mainTemplate);
+
+var _examples = require('./examples');
+
+var _examples2 = _interopRequireDefault(_examples);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Collections
+var MainView = exports.MainView = _backbone2.default.View.extend({
+	dependencies: [],
+	name: 'MainView',
+	el: $('body'),
+	initialize: function initialize() {
+		this.template = _underscore2.default.template(_mainTemplate2.default);
+	},
+	render: function render() {
+		console.log('main render');
+		this.$el.html(this.template());
+		new _examples2.default().render();
+		return this;
+	}
+}); // Views Backbone
+exports.default = MainView;
+
+},{"../models/example":6,"../templates/main-template":10,"./examples":12,"backbone":1,"underscore":3}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14311,6 +14531,56 @@ var SingleView = exports.SingleView = _backbone2.default.View.extend({
 }); // Views Backbone
 exports.default = SingleView;
 
-},{"../models/example":6,"backbone":1,"underscore":3}]},{},[4])
+},{"../models/example":6,"backbone":1,"underscore":3}],15:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.HeaderView = undefined;
+
+var _backbone = require('backbone');
+
+var _backbone2 = _interopRequireDefault(_backbone);
+
+var _example = require('../models/example');
+
+var _example2 = _interopRequireDefault(_example);
+
+var _underscore = require('underscore');
+
+var _underscore2 = _interopRequireDefault(_underscore);
+
+var _headerTemplate = require('../templates/header-template');
+
+var _headerTemplate2 = _interopRequireDefault(_headerTemplate);
+
+var _main = require('./main');
+
+var _main2 = _interopRequireDefault(_main);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Collections
+var HeaderView = exports.HeaderView = _backbone2.default.View.extend({
+	remove: function remove() {
+		this.$el.empty().off(); /* off to unbind the events */
+		this.stopListening();
+		return this;
+	},
+	name: 'HeaderView',
+	el: $('.header'),
+	dependencies: [_main2.default],
+	initialize: function initialize() {
+		this.template = _underscore2.default.template(_headerTemplate2.default);
+	},
+	render: function render() {
+		this.$el.html(this.template());
+		return this;
+	}
+}); // Views Backbone
+exports.default = HeaderView;
+
+},{"../models/example":6,"../templates/header-template":9,"./main":13,"backbone":1,"underscore":3}]},{},[4])
 
 //# sourceMappingURL=bundle.js.map

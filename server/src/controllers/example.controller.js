@@ -12,10 +12,8 @@ export function getExamples(req, res) {
 
 export function addExample(req, res) {
 	console.log(`Received POST`)
-	console.log(req.body)
 	const newExample = new Example(req.body);
 	newExample.save((err, docs) => {
-		console.log(docs)
 		if(err) res.status(500).send(err);
 		res.send(docs)
 	})

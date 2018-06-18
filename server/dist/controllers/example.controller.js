@@ -27,10 +27,8 @@ function getExamples(req, res) {
 
 function addExample(req, res) {
 	console.log('Received POST');
-	console.log(req.body);
 	var newExample = new _example2.default(req.body);
 	newExample.save(function (err, docs) {
-		console.log(docs);
 		if (err) res.status(500).send(err);
 		res.send(docs);
 	});

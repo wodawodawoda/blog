@@ -2,12 +2,12 @@
 import Backbone from 'backbone'
 import _ from 'underscore'
 import Example from '../models/example'
-
+import exampletemplate from '../templates/example-template'
 const ExampleView = Backbone.View.extend({
 	model: new Example(),
 	tagName: 'div',
 	initialize: function () {
-		this.template = _.template($('.example-list-template').html())
+		this.template = _.template(exampletemplate)
 	},
 	events: {
 		'click .edit-example': 'edit',

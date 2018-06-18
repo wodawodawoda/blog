@@ -11,8 +11,12 @@ import exampleInstance from './collections/examples'
 
 
 import Router from './router'
+
 const router = new Router();
 
+router.on('route', function () {
+	// console.log('nosiema')
+})
 // const examplesView = new ExamplesView()
 
 // DOM events handlers
